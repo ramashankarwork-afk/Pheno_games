@@ -1,0 +1,75 @@
+let score = 0;
+let timeLeft = 10;
+let timerInterval;
+const scoreDisplay = document.getElementById('score');
+const timerDisplay = document.getElementById('timer');
+const clickButton = document.getElementById('click-button');
+const startButton = document.getElementById('start-game');
+const saveButton = document.getElementById('save-score');
+const resetButton = document.getElementById('reset');
+const leaderboard = document.getElementById('leaderboard');
+
+// Start game
+startButton.addEventListener('click', () => {
+    score = 0;
+    timeLeft = 10;
+    scoreDisplay.textContent = score;
+    timerDisplay.textContent = timeLeft;
+    clickButton.disabled = false;
+    startButton.disabled = true;
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        timerDisplay.textContent = timeLeft;
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            clickButton.disabled = true;
+            startButton.disabled = false;
+            alert(`Time's up! Your score: ${score}`);
+        }
+    }, 1000);
+});
+
+// Click to score
+clickButton.addEventListener('click', () => {
+    if (timeLeft > 0) {
+        score++;
+        scoreDisplay.textContent = score;
+    }
+});
+
+// Save score
+saveButton.addEventListener('click', () => {
+    const name = prompt('Enter your name:');
+    if (name && score > 0) {
+        const scores = JSON.parse(localStorage.getItem('leaderboard')) || [];
+        scores.push({ name, score });
+        scores.sort((a, b) => b.score - a.score);
+        localStorage.setItem('leaderboard', JSON.stringify(scores));
+        updateLeaderboard();
+    }
+});
+
+// Reset
+resetButton.addEventListener('click', () => {
+    clearInterval(timerInterval);
+    score = 0;
+    timeLeft = 10;
+    scoreDisplay.textContent = score;
+    timerDisplay.textContent = timeLeft;
+    clickButton.disabled = true;
+    startButton.disabled = false;
+});
+
+// Update leaderboard
+function updateLeaderboard() {
+    const scores = JSON.parse(localStorage.getItem('leaderboard')) || [];
+    leaderboard.innerHTML = '';
+    scores.slice(0, 5).forEach((entry, index) => {
+        const li = document.createElement('li');
+        li.textContent = `${index + 1}. ${entry.name}: ${entry.score}`;
+        leaderboard.appendChild(li);
+    });
+}
+
+// Load on start
+updateLeaderboard();
